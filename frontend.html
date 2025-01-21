@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schizophrenia Detector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #444;
+            font-size: 36px;
+        }
+        .input-container {
+            margin: 20px 0;
+        }
+        .input-container label {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .input-container textarea {
+            width: 100%;
+            height: 100px;
+            font-size: 16px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result-container {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 20px;
+        }
+        .result-container span {
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Schizophrenia Detector</h1>
+        <div class="input-container">
+            <label for="comment">Enter a comment:</label>
+            <textarea id="comment" placeholder="Type your comment here..."></textarea>
+        </div>
+        <div class="button-container">
+            <button id="predict-btn">Predict</button>
+        </div>
+        <div class="result-container" id="result"></div>
+    </div>
+    <script>
+        const API_URL = "http://127.0.0.1:8000/predict";
+
+        document.getElementById('predict-btn').addEventListener('click', async () => {
+            const comment = document.getElementById('comment').value.trim();
+            const resultContainer = document.getElementById('result');
+            resultContainer.textContent = "Processing...";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        comments: comment ? [comment] : [
+                            "I feel like I'm at my end.",
+                            "I passed my driver's permit test today.",
+                            "I'm tired of convincing myself that I want to be alive every day.",
+                            "We first got together freshman year."
+                        ]
+                    }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultContainer.innerHTML = `
+                        <p>Result: <span>${data.result}</span></p>
+                        <p>Predictions: ${data.predictions.join(', ')}</p>
+                        <p>Schizophrenia Probability: ${(data.ratio * 100).toFixed(2)}%</p>
+                    `;
+                } else {
+                    const error = await response.json();
+                    resultContainer.textContent = `Error: ${error.detail}`;
+                }
+            } catch (error) {
+                resultContainer.textContent = `An error occurred: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
